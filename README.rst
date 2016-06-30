@@ -1,22 +1,17 @@
 Solaris
 ========================
 
-This project aims to add a set of tools enabling a solr devloper or tester to
-run and deploy easyly and transparent through docker an instance of solr.
-
-Pre requisistes:
-    Python 2.7
+This project aims to add a set of tools enabling a solr developer or tester to run and deploy easily and transparent through docker an instance of solr.
+Prerequisites:
+    Python 2.7 
     docker
 
-Copy in a local folder the solr configuration and core details you wish to
-expose (solr.xml, core: conf/solrconf.xml and  conf/schema.xml & index data)
+- Copy in a local folder the solr configuration and core details you wish to expose (solr.xml, core: conf/solrconf.xml and conf/schema.xml & index data)
+- Set up the conf.py file according your needs in solaris/src/conf.py
+- Install requisites.txt, preferable in a virtualenv.
 
-Set up the conf.py file according your needs in solaris/src/conf.py
+The only supported method currently is to run a solr instance out of a pre made WAR, that should be placed in the shared_dir.
 
-Install requisistes.txt, preferable in a virtualenv.
+- Run: python core.py
 
-The only suported method currently is to run a solr instance out of a pre made WAR, that should be placed in the `shared_dir`.
-
-Run: python core.py
-
-You can now visit your solr instace in http://<docker-ip>:<Port>/trovit_solr
+You can now visit your solr instance in http://<docker-ip>:<Port>/trovit_solr

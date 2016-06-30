@@ -8,12 +8,16 @@ from conf import config as CONF
 
 
 def getDockerFile(path):
-    return os.path.realpath('.').replace('/src', '') + path
+    tmp = os.path.relpath(__file__)
+    head, tail = os.path.split(tmp)
+    dpath = head + path
+    pprint(dpath)
+    return dpath
 
 
 def full(img='solr4'):
     solr_path = CONF['shared_dir'] + CONF['solr_dir']
-    fpath = getDockerFile('/conf/solr4')
+    fpath = getDockerFile('/assets/solr4')
     client = docker.from_env(assert_hostname=False)
     response = [l for l in client.build(fpath, tag=img)]
     pprint(response)
@@ -29,12 +33,11 @@ def full(img='solr4'):
     pprint(container['Id'])
     status = client.start(container['Id'])
     pprint(status)
-    # client.delete(container['Id'])
 
 
 def from_war(img='solr4min', name='min'):
     docker_path = '/usr/local/deploys'
-    f_path = getDockerFile('/conf/solr4-min')
+    f_path = getDockerFile('/assets/solr4-min')
     client = docker.from_env(assert_hostname=False)
     response = [l for l in client.build(f_path, tag=img)]
     pprint(response)
@@ -57,7 +60,6 @@ def from_war(img='solr4min', name='min'):
         container = client.create_container(
             image=img,
             name=name,
-            ports=[8080],
             volumes=[docker_path],
             host_config=client.create_host_config(binds={
                 CONF['shared_dir']: {
@@ -99,6 +101,34 @@ def solr_start(container='min'):
     cmd = 'catalina.sh start'
     helpers.docker_exec(cmd, container)
 
-from_war()
-set_up_solr()
-solr_start()
+
+def create_mysql():
+    docker_path = '/usr/local/deploys'
+    f_path = getDockerFile('/assets/mysql')
+    client = docker.from_env(assert_hostname=False)
+    response = [l for l in client.build(f_path, tag='mysql')]
+    pprint(response)
+    container = client.create_container(
+        image='mysql',
+        name='mysql',
+        volumes=[docker_path],
+        host_config=client.create_host_config(binds={
+            CONF['shared_dir']: {
+                'bind': docker_path,
+                'mode': 'rw',
+            }}))
+    pprint(container['Id'])
+    pprint(client.start(container['Id']))
+
+
+def remove():
+    client = docker.from_env(assert_hostname=False)
+    client.remove_container('min', force=True)
+    client.remove_container('mysql', force=True)
+
+
+def run():
+    from_war()
+    create_mysql()
+    set_up_solr()
+    solr_start()
