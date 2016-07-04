@@ -1,7 +1,6 @@
 
 import core
 from docopt import docopt
-from pprint import pprint
 
 command_line = """Solaris Manager
 
@@ -16,7 +15,6 @@ Options:
 
 def main():
     arguments = docopt(command_line)
-    pprint(arguments)
     if arguments['run']:
         core.run()
     elif arguments['rm']:

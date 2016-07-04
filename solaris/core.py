@@ -2,6 +2,7 @@
 import docker
 import helpers
 import os.path
+import time
 
 from pprint import pprint
 from conf import config as CONF
@@ -11,28 +12,7 @@ def getDockerFile(path):
     tmp = os.path.relpath(__file__)
     head, tail = os.path.split(tmp)
     dpath = head + path
-    pprint(dpath)
     return dpath
-
-
-def full(img='solr4'):
-    solr_path = CONF['shared_dir'] + CONF['solr_dir']
-    fpath = getDockerFile('/assets/solr4')
-    client = docker.from_env(assert_hostname=False)
-    response = [l for l in client.build(fpath, tag=img)]
-    pprint(response)
-    container = client.create_container(
-        image=img,
-        name='solr',
-        volumes=['/opt/solr'],
-        host_config=client.create_host_config(binds={
-            solr_path: {
-                'bind': '/opt/solr',
-                'mode': 'rw',
-                }}))
-    pprint(container['Id'])
-    status = client.start(container['Id'])
-    pprint(status)
 
 
 def from_war(img='solr4min', name='min'):
@@ -67,7 +47,7 @@ def from_war(img='solr4min', name='min'):
                     'mode': 'rw',
                     }}))
     pprint(container['Id'])
-    pprint(client.start(container['Id']))
+    client.start(container['Id'])
 
 
 def set_up_solr(container='min'):
@@ -103,14 +83,18 @@ def solr_start(container='min'):
 
 
 def create_mysql():
+    def d_exec(cmd):
+        return helpers.docker_exec(cmd, 'mysql')
     docker_path = '/usr/local/deploys'
     f_path = getDockerFile('/assets/mysql')
     client = docker.from_env(assert_hostname=False)
     response = [l for l in client.build(f_path, tag='mysql')]
     pprint(response)
+    enviro = ["MYSQL_ROOT_PASSWORD="+CONF["msqlpass"]]
     container = client.create_container(
         image='mysql',
         name='mysql',
+        environment=enviro,
         volumes=[docker_path],
         host_config=client.create_host_config(binds={
             CONF['shared_dir']: {
@@ -118,17 +102,37 @@ def create_mysql():
                 'mode': 'rw',
             }}))
     pprint(container['Id'])
-    pprint(client.start(container['Id']))
+    client.start(container['Id'])
+    time.sleep(2)
+    # Shoulw be configurable and a single file
+    d_exec('cp /usr/local/deploys/ppc.sql /docker-entrypoint-initdb.d')
+    d_exec('cp /usr/local/deploys/trovit_global.sql' +
+           '/docker-entrypoint-initdb.d')
+    d_exec('cp /usr/local/deploys/trovit_internal.sql' +
+           '/docker-entrypoint-initdb.d')
 
 
 def remove():
     client = docker.from_env(assert_hostname=False)
-    client.remove_container('min', force=True)
-    client.remove_container('mysql', force=True)
+    flag = 0
+    if client.containers(filters={'name': 'min'}):
+        client.remove_container('min', force=True)
+        flag = 1
+    if client.containers(filters={'name': 'mysql'}, all=True):
+        client.remove_container('mysql', force=True)
+        flag = flag + 2
+    if flag == 1:
+        pprint("Solr min container removed")
+    elif flag == 2:
+        pprint("Mysql container removed")
+    elif flag == 3:
+        pprint("Solr and Mysql containers removed")
+    else:
+        pprint("nothing to remove")
 
 
 def run():
-    from_war()
     create_mysql()
+    from_war()
     set_up_solr()
     solr_start()

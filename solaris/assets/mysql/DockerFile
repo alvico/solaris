@@ -1,11 +1,7 @@
 FROM mysql:5.5
 
-RUN /bin/bash -c "/usr/bin/mysqld_safe &" && \
-  sleep 5 && \
-  mysql -u root -e "CREATE DATABASE trovit_ppc_es" && \
-  mysql -u root mydb < /usr/deploy/ppc.sql
+ENTRYPOINT ["docker-entrypoint.sh"]
 
-
-
-
-
+EXPOSE 3306 33060
+# CMD ["/bin/ping","localhost"]
+CMD ["mysqld"]

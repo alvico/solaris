@@ -12,5 +12,7 @@ config = {
     # Forwarding rnsblrf, msnfsyoty in OSX
     'port_forwarding': 'True',
     # Port that will be exposed in host
-    'tomcat_port': '8080'
+    'tomcat_port': '8080',
+    # Pass for Mysql
+    'mysqlpass': 'pass'
 }
