@@ -104,12 +104,8 @@ def create_mysql():
     pprint(container['Id'])
     client.start(container['Id'])
     time.sleep(2)
-    # Shoulw be configurable and a single file
-    d_exec('cp /usr/local/deploys/ppc.sql /docker-entrypoint-initdb.d')
-    d_exec('cp /usr/local/deploys/trovit_global.sql' +
-           '/docker-entrypoint-initdb.d')
-    d_exec('cp /usr/local/deploys/trovit_internal.sql' +
-           '/docker-entrypoint-initdb.d')
+    d_exec('cp /usr/local/deploys/{0}' +
+           '/docker-entrypoint-initdb.d'.format(CONF['mysqldump']))
 
 
 def remove():

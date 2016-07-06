@@ -14,5 +14,7 @@ config = {
     # Port that will be exposed in host
     'tomcat_port': '8080',
     # Pass for Mysql
-    'mysqlpass': 'pass'
+    'mysqlpass': 'pass',
+    # MySQL dump file
+    'mysqldump': 'filename.sql'
 }
