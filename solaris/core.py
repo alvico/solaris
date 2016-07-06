@@ -79,7 +79,29 @@ def set_up_solr(container='min'):
 
 def solr_start(container='min'):
     cmd = 'catalina.sh start'
+    docker_path = '/usr/local/deploys'
     helpers.docker_exec(cmd, container)
+    client = docker.from_env(assert_hostname=False)
+    # TODO: only works with one bridge network
+    net = client.networks(names=['bridge'])[0]
+    cont = net['Containers']
+    ip = [c['IPv4Address'] for c in cont.values() if c['Name'] == 'mysql']
+    if ip:
+        ip = ip[0].split('/')[0]
+        line = """{0}       slave.solr.global.mysql
+              slave.homes.es.ppc.mysql
+              slave.pipeline.mysql master.homes.es.ppc.mysql""".format(ip)
+        out, err = helpers.docker_exec("cat /etc/hosts", container)
+        out = out.split('\n')
+        anch = out[-1]
+        content = helpers.insert_line_after(out, line.replace('\n', ''), anch)
+        with open(CONF['shared_dir']+"tmp1.txt", "w") as text_file:
+            text_file.write('\n'.join(content))
+        hosts = "/etc/hosts"
+        cmd = "cp {0}/tmp1.txt {1}".format(docker_path, hosts)
+        helpers.docker_exec(cmd, container)
+    else:
+        print "Mysql Container not working"
 
 
 def create_mysql():
@@ -104,8 +126,10 @@ def create_mysql():
     pprint(container['Id'])
     client.start(container['Id'])
     time.sleep(2)
-    d_exec('cp /usr/local/deploys/{0}' +
-           '/docker-entrypoint-initdb.d'.format(CONF['mysqldump']))
+    cmd = "cp /usr/local/deploys/{0}".format(CONF['mysqldump'])
+    cmd = cmd + ' /docker-entrypoint-initdb.d'
+    print cmd
+    d_exec(cmd)
 
 
 def remove():
