@@ -90,7 +90,7 @@ def create_mysql():
     client = docker.from_env(assert_hostname=False)
     response = [l for l in client.build(f_path, tag='mysql')]
     pprint(response)
-    enviro = ["MYSQL_ROOT_PASSWORD="+CONF["msqlpass"]]
+    enviro = ["MYSQL_ROOT_PASSWORD="+CONF["mysqlpass"]]
     container = client.create_container(
         image='mysql',
         name='mysql',

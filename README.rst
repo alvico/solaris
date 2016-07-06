@@ -8,6 +8,7 @@ Prerequisites:
     docker
 
 - Copy in a local folder the solr configuration and core details you wish to expose (solr.xml, core: conf/solrconf.xml and conf/schema.xml & index data)
+- Copy in a local folder the mysql dump of the tables that you need.
 - Set up the conf.py file according your needs in solaris/src/conf.py
 - Install it with python setup.py install, preferable in a virtualenv.
 
