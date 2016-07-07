@@ -7,6 +7,8 @@ import time
 from pprint import pprint
 from conf import config as CONF
 
+DOCKER_PATH = '/usr/local/deploys'
+
 
 def getDockerFile(path):
     tmp = os.path.relpath(__file__)
@@ -16,7 +18,6 @@ def getDockerFile(path):
 
 
 def from_war(img='solr4min', name='min'):
-    docker_path = '/usr/local/deploys'
     f_path = getDockerFile('/assets/solr4-min')
     client = docker.from_env(assert_hostname=False)
     response = [l for l in client.build(f_path, tag=img)]
@@ -27,10 +28,10 @@ def from_war(img='solr4min', name='min'):
             image=img,
             name=name,
             ports=[8080],
-            volumes=[docker_path],
+            volumes=[DOCKER_PATH],
             host_config=client.create_host_config(binds={
                 CONF['shared_dir']: {
-                    'bind': docker_path,
+                    'bind': DOCKER_PATH,
                     'mode': 'rw',
                     }},
                 port_bindings={
@@ -40,10 +41,10 @@ def from_war(img='solr4min', name='min'):
         container = client.create_container(
             image=img,
             name=name,
-            volumes=[docker_path],
+            volumes=[DOCKER_PATH],
             host_config=client.create_host_config(binds={
                 CONF['shared_dir']: {
-                    'bind': docker_path,
+                    'bind': DOCKER_PATH,
                     'mode': 'rw',
                     }}))
     pprint(container['Id'])
@@ -53,13 +54,12 @@ def from_war(img='solr4min', name='min'):
 def set_up_solr(container='min'):
     def d_exec(cmd):
         return helpers.docker_exec(cmd, container)
-    docker_path = '/usr/local/deploys'
     tomcat = '/usr/local/tomcat/webapps/'
     cp = "cp "
-    cmd = cp + docker_path + "/trovit_solr.war " + tomcat
+    cmd = cp + DOCKER_PATH + "/trovit_solr.war " + tomcat
     pprint(cmd)
     d_exec(cmd)
-    cmd = cp + " -r " + docker_path + "/solr " + "/var/local"
+    cmd = cp + " -r " + DOCKER_PATH + "/solr " + "/var/local"
     pprint(cmd)
     d_exec(cmd)
     cmd = "cat /usr/local/tomcat/bin/catalina.sh"
@@ -73,13 +73,12 @@ def set_up_solr(container='min'):
     cat = "/usr/local/tomcat/bin/catalina.sh"
     cmd = "cp {0} {0}.bck".format(cat)
     d_exec(cmd)
-    cmd = "{0}{1}/tmp.txt {2}".format(cp, docker_path, cat)
+    cmd = "{0}{1}/tmp.txt {2}".format(cp, DOCKER_PATH, cat)
     d_exec(cmd)
 
 
 def solr_start(container='min'):
     cmd = 'catalina.sh start'
-    docker_path = '/usr/local/deploys'
     helpers.docker_exec(cmd, container)
     client = docker.from_env(assert_hostname=False)
     # TODO: only works with one bridge network
@@ -93,7 +92,7 @@ def solr_start(container='min'):
         h3 = "slave.pipeline.mysql"
         h4 = "master.homes.es.ppc.mysql"
         tab = '\t'
-        line = "{0}{1}{2}{1}{3}{1}{4}".format(ip, tab, h1, h2, h3, h4) 
+        line = "{0}{1}{2}{1}{3}{1}{4}".format(ip, tab, h1, h2, h3, h4)
         out, err = helpers.docker_exec("cat /etc/hosts", container)
         out = out.split('\n')
         anch = out[-1]
@@ -101,7 +100,7 @@ def solr_start(container='min'):
         with open(CONF['shared_dir']+"tmp1.txt", "w") as text_file:
             text_file.write('\n'.join(content))
         hosts = "/etc/hosts"
-        cmd = "cp {0}/tmp1.txt {1}".format(docker_path, hosts)
+        cmd = "cp {0}/tmp1.txt {1}".format(DOCKER_PATH, hosts)
         helpers.docker_exec(cmd, container)
     else:
         print "Mysql Container not working"
@@ -110,7 +109,6 @@ def solr_start(container='min'):
 def create_mysql():
     def d_exec(cmd):
         return helpers.docker_exec(cmd, 'mysql')
-    docker_path = '/usr/local/deploys'
     f_path = getDockerFile('/assets/mysql')
     client = docker.from_env(assert_hostname=False)
     response = [l for l in client.build(f_path, tag='mysql')]
@@ -120,10 +118,10 @@ def create_mysql():
         image='mysql',
         name='mysql',
         environment=enviro,
-        volumes=[docker_path],
+        volumes=[DOCKER_PATH],
         host_config=client.create_host_config(binds={
             CONF['shared_dir']: {
-                'bind': docker_path,
+                'bind': DOCKER_PATH,
                 'mode': 'rw',
             }}))
     pprint(container['Id'])
@@ -133,29 +131,3 @@ def create_mysql():
     cmd = cmd + ' /docker-entrypoint-initdb.d'
     print cmd
     d_exec(cmd)
-
-
-def remove():
-    client = docker.from_env(assert_hostname=False)
-    flag = 0
-    if client.containers(filters={'name': 'min'}):
-        client.remove_container('min', force=True)
-        flag = 1
-    if client.containers(filters={'name': 'mysql'}, all=True):
-        client.remove_container('mysql', force=True)
-        flag = flag + 2
-    if flag == 1:
-        pprint("Solr min container removed")
-    elif flag == 2:
-        pprint("Mysql container removed")
-    elif flag == 3:
-        pprint("Solr and Mysql containers removed")
-    else:
-        pprint("nothing to remove")
-
-
-def run():
-    create_mysql()
-    from_war()
-    set_up_solr()
-    solr_start()

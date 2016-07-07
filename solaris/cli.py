@@ -1,5 +1,5 @@
+import commands
 
-import core
 from docopt import docopt
 
 command_line = """Solaris Manager
@@ -7,6 +7,12 @@ command_line = """Solaris Manager
 Usage:
     solaris run
     solaris rm
+    solaris rst
+
+Arguments:
+    run     builds containers (Solr and Mysql)
+    rm      removes containers
+    rst     restarts solr through catalina start|stop
 
 Options:
     -h help     show this screen
@@ -16,9 +22,11 @@ Options:
 def main():
     arguments = docopt(command_line)
     if arguments['run']:
-        core.run()
+        commands.run()
     elif arguments['rm']:
-        core.remove()
+        commands.remove()
+    elif arguments['rst']:
+        commands.restart_solr
     else:
         print "Error: No instruction passed"
 
