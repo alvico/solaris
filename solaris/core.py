@@ -5,7 +5,7 @@ import os.path
 import time
 
 from pprint import pprint
-from conf import config as CONF
+from conf_local import config as CONF
 
 DOCKER_PATH = '/usr/local/deploys'
 
@@ -91,8 +91,8 @@ def solr_start(container='min'):
         h2 = "slave.homes.es.ppc.mysql"
         h3 = "slave.pipeline.mysql"
         h4 = "master.homes.es.ppc.mysql"
-        tab = '\t'
-        line = "{0}{1}{2}{1}{3}{1}{4}".format(ip, tab, h1, h2, h3, h4)
+        tab = "\t"
+        line = "{0}{1}{2} {3} {4} {5}".format(ip, tab, h1, h2, h3, h4)
         out, err = helpers.docker_exec("cat /etc/hosts", container)
         out = out.split('\n')
         anch = out[-1]

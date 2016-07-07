@@ -1,0 +1,9 @@
+conf_local.py
+conf.py.local
+build/
+dist/
+files.txt
+solaris.egg-info/
+*.pyc
+**.swp
+

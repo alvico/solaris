@@ -10,7 +10,7 @@ Prerequisites:
 Instructions:
     - Copy in a local folder the solr configuration and core details you wish to expose (solr.xml, core: conf/solrconf.xml and conf/schema.xml & index data)
     - Copy in the same local folder the mysql dump of the tables that you need.
-    - Set up the conf.py file according your needs in solaris/src/conf.py.
+    - Copy conf.py into conf_local.py and set it up according to your needs in solaris/src/conf.py.
     - Install it with setup.py, preferable in a virtualenv.
         - python setup.py install
 
