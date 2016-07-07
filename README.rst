@@ -11,7 +11,7 @@ Prerequisites:
 - Copy in the same local folder the mysql dump of the tables that you need.
 - Set up the conf.py file according your needs in solaris/src/conf.py
 - Install it with python setup.py install, preferable in a virtualenv.
-    - python stup.py install
+    - python setup.py install
 
 The only supported method currently is to run a solr instance out of a pre made WAR, that should be placed in the shared_dir.
 

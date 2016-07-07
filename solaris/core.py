@@ -88,9 +88,12 @@ def solr_start(container='min'):
     ip = [c['IPv4Address'] for c in cont.values() if c['Name'] == 'mysql']
     if ip:
         ip = ip[0].split('/')[0]
-        line = """{0}       slave.solr.global.mysql
-              slave.homes.es.ppc.mysql
-              slave.pipeline.mysql master.homes.es.ppc.mysql""".format(ip)
+        h1 = "slave.solr.global.mysql"
+        h2 = "slave.homes.es.ppc.mysql"
+        h3 = "slave.pipeline.mysql"
+        h4 = "master.homes.es.ppc.mysql"
+        tab = '\t'
+        line = "{0}{1}{2}{1}{3}{1}{4}".format(ip, tab, h1, h2, h3, h4) 
         out, err = helpers.docker_exec("cat /etc/hosts", container)
         out = out.split('\n')
         anch = out[-1]
