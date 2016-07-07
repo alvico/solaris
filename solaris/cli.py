@@ -26,7 +26,7 @@ def main():
     elif arguments['rm']:
         commands.remove()
     elif arguments['rst']:
-        commands.restart_solr
+        commands.restart_solr()
     else:
         print "Error: No instruction passed"
 
