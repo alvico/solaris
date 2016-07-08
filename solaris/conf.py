@@ -6,7 +6,7 @@
 
 config = {
     # path to dir that will be mounted in docker
-    'shared_dir': '/path/to/some/dir',
+    'shared_dir': '/path/to/some/dir/',
     # relative path to solr conf and index files in shared_dir
     'solr_dir': 'solr4/',
     # Forwarding rnsblrf, msnfsyoty in OSX
